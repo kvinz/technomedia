@@ -1,0 +1,96 @@
+﻿@model System.Collections.IEnumerable
+@{
+    ViewBag.Title = "Заявки";
+    Layout = "~/Views/Shared/_LayoutTeam.cshtml";
+    var X = Html.X();
+}
+
+@{
+    string editUrl = Url.Action("EditTeamCase");
+}
+@section headtag
+{
+    <script>
+
+        var onComboBoxSelect = function (item, records) {
+            var store = App.GridPanel1.getStore(),
+                curPageSize = store.pageSize,
+                wantedPageSize = parseInt(item.getValue(), 10);
+
+            if (wantedPageSize != curPageSize) {
+                store.pageSize = wantedPageSize;
+                store.reload();
+            }
+        };
+
+        var onCommand = function (column, command, record, recordIndex, cellIndex) {
+            if (command == 'Edit') {
+                window.location = '@editUrl' + '/' + record.data.Id;
+            }
+        };
+
+
+    </script>
+}
+
+
+@(Html.X().GridPanel()
+        .ID("GridPanel1")
+        .Title("Заявки")
+        .Store(
+            X.Store()
+                .PageSize(10)
+                .DataSource(Model)
+                .Model(
+                    Html.X().Model()
+                    .Fields(
+                        new ModelField("Id"),
+                        new ModelField("Name"),
+                        new ModelField("Description", ModelFieldType.String),
+                        new ModelField("Note"),
+                        new ModelField("Status")
+                    )
+                )
+                .ServerProxy(
+                    Html.X().AjaxProxy()
+                        .Url(Url.Action("GetDataForTeam"))
+                )
+        )
+        .ColumnModel(
+            X.RowNumbererColumn(),
+            X.Column().Text("Название").DataIndex("Name"),
+            X.Column().Text("Описание").DataIndex("Description").Width(300),
+            X.Column().Text("Примечание").DataIndex("Note").Width(300),
+            X.Column().Text("Статус").DataIndex("Status"),
+            X.CommandColumn()
+                .Width(100)
+                .Commands(
+                    Html.X().GridCommand()
+                        .CommandName("Edit")
+                        .Icon(Icon.NoteEdit)
+                        .Text("Изменить")
+
+                )
+
+                .Listeners(ls => ls.Command.Fn  = "onCommand")
+        )
+        .SelectionModel(
+            Html.X().RowSelectionModel().Mode(SelectionMode.Multi)
+        )
+        .View(Html.X().GridView().StripeRows(true))
+        .BottomBar(
+            Html.X().PagingToolbar()
+                .Items(
+                    Html.X().Label("Кол-во:"),
+                    Html.X().ToolbarSpacer(10),
+                    Html.X().ComboBox()
+                        .Width(80)
+                        .Items("1", "2", "10", "20")
+                        .SelectedItems("10")
+                        .Listeners(l=>{
+                            l.Select.Fn = "onComboBoxSelect";
+                        })
+                )
+                .Plugins(Html.X().ProgressBarPager())
+        )
+    )

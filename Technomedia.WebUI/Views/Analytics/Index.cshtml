@@ -1,0 +1,141 @@
+﻿@model Technomedia.WebUI.Models.AnalyticsViewModel
+@{
+    ViewBag.Title = "Аналитика";
+    Layout = "~/Views/Shared/_LayoutBoss.cshtml";
+    var X = Html.X();
+}
+
+@section headtag
+{
+    <script>
+        var form = false,
+            rec = false,
+            selectedStoreItem = false;
+
+        var onComboBoxSelect = function (item, records) {
+             var store = App.GridPanel1.getStore(),
+                 curPageSize = store.pageSize,
+                 wantedPageSize = parseInt(item.getValue(), 10);
+
+             if (wantedPageSize != curPageSize) {
+                 store.pageSize = wantedPageSize;
+                 store.reload();
+             }
+            /*var store = App.GridPanel1.getStore();
+            store.reload();*/
+        };
+
+        var sortData = function() {
+            App.GridPanel1.getStore().reload();            
+        };
+    </script>
+
+    <style>
+        .x-panel-framed {
+            padding: 0;
+        }
+    </style>
+}
+
+@(X.FormPanel()
+        .Title("Аналитика")
+        .Frame(true)
+        .BodyPadding(5)
+        //.Width(870)
+        .Height(720)
+        .FieldDefaults(fd => {
+            fd.LabelAlign = LabelAlign.Left;
+            fd.MsgTarget = MessageTarget.Side;
+        })
+        //.LayoutConfig(new VBoxLayoutConfig() { Align = VBoxAlign.Stretch })
+        .Items(
+                X.ComboBox()
+                    .ID("ComboBoxTeam")
+                    .Width(400)
+                        .Name("SelectedListItem")
+                        .FieldLabel("Бригада")
+                        .EmptyText("Выберите бригаду")
+                        .SelectedItems(Model.ListItemValue)
+                        .Listeners(ls => ls.Select.Fn = "sortData")
+                        .Items(
+                            Model.ListItems
+                        ),
+                X.DateField()
+                    .ID("DateFieldClose")
+                    .Width(400)
+                        .Name("DateClosedCase")
+                        .FieldLabel("Месяц")
+                        .Type(DatePickerType.Month)
+                        .Listeners(ls => ls.Change.Handler = "App.GridPanel1.getStore().reload();")
+                        .Format("m/Y"),
+                X.TextField()
+                    .Width(400)
+                    .ID("CountCases")
+                        .FieldLabel("Количество заявок"),
+                X.Button()
+                    .Margin(10)
+                    .Text("Сброс")
+                    .OnClientClick("location.reload();"),
+                X.GridPanel()
+                    .ID("GridPanel1")
+                    .Title("Заявки")
+                    .Store(
+                        X.Store()
+                            .PageSize(10)
+                            .DataSource(Model.CasesData)
+                            .Model(
+                                Html.X().Model()
+                                .Fields(
+                                    new ModelField("Name"),
+                                    new ModelField("Team"),
+                                    new ModelField("DateTimeEnd"),
+                                    new ModelField("WorkingTime", ModelFieldType.String)
+                                )
+                            )
+                            .ServerProxy(
+                                Html.X().AjaxProxy()
+                                    .Url(Url.Action("GetData"))
+                            )
+                            
+                            .Parameters(ps =>
+                            ps.AddRange(new List<StoreParameter> { new StoreParameter("teamId", "App.ComboBoxTeam.getValue()", ParameterMode.Raw),
+                            new StoreParameter("month", "App.DateFieldClose.getValue()", ParameterMode.Raw)})                            
+                            //ps.Add(new StoreParameter("teamId", "App.ComboBoxTeam.getValue()", ParameterMode.Raw))                            
+                            )
+                            .Listeners(ls =>
+                                ls.Load.Handler = @"console.log(this.getCount()); App.CountCases.setValue(this.getCount());"
+                            )
+                    )
+                    .ColumnModel(
+                        X.RowNumbererColumn(),
+                        X.Column().Text("Название").DataIndex("Name").Width(200),
+                        X.Column().Text("Бригада").DataIndex("Team"),
+                        X.Column().Text("Затраченное время").DataIndex("WorkingTime").Width(150),
+                        X.DateColumn()
+                            .Text("Дата закрытия")
+                            .DataIndex("DateTimeEnd")
+                            .Width(150)
+                            .Format("dd.MM.yyyy HH:mm")
+                    )
+                    .SelectionModel(
+                        Html.X().RowSelectionModel().Mode(SelectionMode.Multi)
+                    )
+                    .View(Html.X().GridView().StripeRows(true))
+                    .BottomBar(
+                        Html.X().PagingToolbar()
+                            .Items(
+                                Html.X().Label("Кол-во:"),
+                                Html.X().ToolbarSpacer(10),
+                                Html.X().ComboBox()
+                                    .Width(80)
+                                    .Items("1", "2", "10", "20")
+                                    .SelectedItems("10")
+                                    .Listeners(l =>
+                                    {
+                                        l.Select.Fn = "onComboBoxSelect";
+                                    })
+                            )
+                            .Plugins(Html.X().ProgressBarPager())
+                    )
+    )
+)

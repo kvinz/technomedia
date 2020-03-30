@@ -1,0 +1,29 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutError.cshtml";
+}
+
+<div class="container body">
+    <div class="main_container">
+        <!-- page content -->
+        <div class="col-md-12">
+            <div class="col-middle">
+                <div class="text-center text-center">
+                    <h1 class="error-number">Error</h1>
+                </div>
+                <h3 class="text-danger">Exception.Message: @Model.Exception.Message</h3>
+                <h3 class="text-danger">StackTrace: @Model.Exception.StackTrace</h3>
+                <h3 class="text-danger">Controller Name: @Model.ControllerName</h3>
+                <h3 class="text-danger">Action Name: @Model.ActionName</h3>
+
+                <h3>
+                    @Html.ActionLink("Назад", "Index", "MainPage", new { area = "" }, null)
+                </h3>
+            </div>
+        </div>
+        <!-- /page content -->
+    </div>
+</div>
+

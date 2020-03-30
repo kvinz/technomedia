@@ -1,0 +1,67 @@
+﻿@model Technomedia.WebUI.Models.CreateEditCaseViewModel
+
+@{
+    ViewBag.Title = "Редактирование заявки";
+    Layout = "~/Views/Shared/_LayoutTeam.cshtml";
+    var X = Html.X();
+}
+
+@using (Html.BeginForm())
+{
+    @(X.FormPanel()
+            .ID("FormPanel1")
+            .Title(ViewBag.GridName)
+            .Width(1000)
+            .BodyPadding(5)
+            .DefaultAnchor("50%")
+            .Items(
+                    X.TextField()
+                        .Name("Case.Id")
+                        .Value(Model.Case.Id)
+                        .Hidden(true),
+                    X.TextField()
+                        .Name("Case.Name")
+                        .Value(Model.Case.Name)
+                        .AllowBlank(false)
+                        .Disabled(true)
+                        .FieldLabel("Название"),
+                    X.TextArea()
+                        .Name("Case.Description")
+                        .Text(Model.Case.Description)
+                        .Disabled(true)
+                        .FieldLabel("Описание"),
+                    X.TextArea()
+                        .Name("Case.Note")
+                        .Text(Model.Case.Note)
+                        .FieldLabel("Примечание"),
+                    X.DateField()
+                        .Name("DateClosedCase")
+                        .FieldLabel("Дата выполнения")
+                        .Text(Model.DateClosedCase),
+                    X.TimeField()
+                        .Name("TimeClosedCase")
+                        .Text(Model.TimeClosedCase)
+                        .FieldLabel("Время выполнения"),
+                    X.ComboBox()
+                        .Name("SelectedListItem")
+                        .FieldLabel("Статус")
+                        .EmptyText("Выберите статус")
+                        .Resizable(true)
+                        .SelectedItems(Model.ListItemValue)
+                        .Items(
+                            Model.ListItems
+                        )
+            )
+            .Buttons(
+                X.Button()
+                    .Text("Сохранить")
+                    .DirectClickAction("EditTeamCase"),
+                X.Button()
+                    .Text("Отмена")
+                    .Listeners(le => le.Click.Handler = "window.location = " + JSON.Serialize(Url.Action("ShowTeamCases")))
+
+
+            )
+    )
+}
+

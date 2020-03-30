@@ -1,0 +1,128 @@
+﻿@model System.Collections.IEnumerable
+@{
+    ViewBag.Title = "Заявки";
+    Layout = "~/Views/Shared/_LayoutSecretary.cshtml";
+    var X = Html.X();
+}
+
+@{ 
+    string editUrl = Url.Action("EditCase");
+    string deleteUrl = Url.Action("DeleteCase");
+}
+@section headtag
+{
+    <script>
+        
+        var onComboBoxSelect = function (item, records) {
+            var store = App.GridPanel1.getStore(),
+                curPageSize = store.pageSize,
+                wantedPageSize = parseInt(item.getValue(), 10);
+
+            if (wantedPageSize != curPageSize) {
+                store.pageSize = wantedPageSize;
+                store.reload();
+            }
+        };
+
+        var onCommand = function (column, command, record, recordIndex, cellIndex) {
+            console.log(column);
+            console.log(command);
+            console.log(record);
+            console.log(recordIndex);
+            console.log(cellIndex);
+            //Ext.Msg.alert('Command', 'Command = ' + command + '<br/>' + 'Column = ' + column.gridRef.columns[cellIndex]);
+
+            if (command == 'Edit') {
+                window.location = '@editUrl' + '/' + record.data.Id;
+            }
+
+            if (command == 'Delete') {
+                Ext.Msg.confirm("Удаление заявки", "Желаете удалить заявку?", function (btn) {
+                    if (btn === "yes") {
+                        window.location = '@deleteUrl' + '/' + record.data.Id;
+                    }
+                })
+            }
+        };
+
+
+    </script>
+}
+
+
+@(Html.X().GridPanel()
+        .ID("GridPanel1")
+        .Title("Заявки")
+        .Store(
+            X.Store()
+                .PageSize(10)
+                .DataSource(Model)
+                .Model(
+                    Html.X().Model()
+                    .Fields(
+                        new ModelField("Id"),
+                        new ModelField("Name"),
+                        new ModelField("Description", ModelFieldType.String),
+                        new ModelField("Team"),
+                        new ModelField("Status"),
+                        new ModelField("DateCreate")
+                    )
+                )
+                .ServerProxy(
+                    Html.X().AjaxProxy()
+                        .Url(Url.Action("GetData"))
+                )
+        )
+        .ColumnModel(
+            X.RowNumbererColumn(),
+            X.Column().Text("Название").DataIndex("Name"),
+            X.Column().Text("Описание").DataIndex("Description").Width(300),
+            X.Column().Text("Бригада").DataIndex("Team"),
+            X.Column().Text("Статус").DataIndex("Status"),
+            X.DateColumn()
+                .Text("Дата создания")
+                .DataIndex("DateCreate")
+                .Width(150)
+                .Format("dd.MM.yyyy HH:mm"),
+            X.CommandColumn()
+                .Width(190)
+                .Commands(
+                    Html.X().GridCommand()
+                        .CommandName("Delete")
+                        .Icon(Icon.Delete)
+                        .Text("Удалить"),
+
+                    Html.X().GridCommand()
+                        .CommandName("Edit")
+                        .Icon(Icon.NoteEdit)
+                        .Text("Изменить")
+
+                )
+
+                .Listeners(ls => ls.Command.Fn  = "onCommand")
+              
+        //.Listeners(ls => ls.Command.Handler =
+        //" if(command == 'Edit') window.location = " + JSON.Serialize(Url.Action("EditCase")) +";"+
+        //" if(command == 'Delete') window.location = " + JSON.Serialize(Url.Action("Delete")))
+        //"(command + record.data.name); console.log(record);")
+        )
+        .SelectionModel(
+            Html.X().RowSelectionModel().Mode(SelectionMode.Multi)
+        )
+        .View(Html.X().GridView().StripeRows(true))
+        .BottomBar(
+            Html.X().PagingToolbar()
+                .Items(
+                    Html.X().Label("Кол-во:"),
+                    Html.X().ToolbarSpacer(10),
+                    Html.X().ComboBox()
+                        .Width(80)
+                        .Items("1", "2", "10", "20")
+                        .SelectedItems("10")
+                        .Listeners(l=>{
+                            l.Select.Fn = "onComboBoxSelect";
+                        })
+                )
+                .Plugins(Html.X().ProgressBarPager())
+        )
+    )

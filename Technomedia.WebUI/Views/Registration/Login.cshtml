@@ -1,0 +1,59 @@
+﻿@using Ext.Net;
+@using Ext.Net.MVC;
+
+@model Technomedia.WebUI.Models.LoginModel
+@{
+    Layout = null;
+    ViewBag.Title = "Авторизация";
+    var X = Html.X();
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="https://speed.ext.net/www/intro/css/main.css" />
+</head>
+<body>
+    @(Html.X().ResourceManager())
+
+    <header>
+    </header>
+
+    @using (Html.BeginForm())
+    {
+
+        @(
+            X.Viewport()
+                .LayoutConfig(new VBoxLayoutConfig()
+                {
+                    Align = VBoxAlign.Center, Pack = BoxPack.Center
+                })
+                .Items(
+                    X.FormPanel()
+                        .Title("Вход")
+                        .Frame(true)
+                        .Width(400)
+                        .BodyPadding(13)
+                        .DefaultAnchor("100%")
+                        .Items(
+                            X.TextField()
+                                .Name("Login")
+                                .FieldLabel("Логин")
+                                .EmptyText("логин")
+                                .AllowBlank(false),
+                            X.TextField()
+                                .Name("Password")
+                                .FieldLabel("Пароль")
+                                .EmptyText("пароль")
+                                .InputType(Ext.Net.InputType.Password)
+                                .AllowBlank(false)
+                        )
+                        .Buttons(
+                            X.Button().Text("Вход").DirectClickAction("Login")
+                        )
+                )
+        )
+    }
+</body>
+</html>

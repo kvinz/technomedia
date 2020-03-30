@@ -1,0 +1,62 @@
+﻿
+@model Technomedia.WebUI.Models.CreateEditCaseViewModel
+@{
+    ViewBag.Title = ViewBag.GridName;
+    Layout = "~/Views/Shared/_LayoutSecretary.cshtml";
+    var X = Html.X();
+}
+
+@{ 
+    string action = "";
+    switch((string)ViewBag.Action)
+    {
+        case "create": action = "CreateCase"; break;
+        case "edit": action = "EditCase"; break;
+    }
+}
+    @using (Html.BeginForm())
+    {
+    @(X.FormPanel()
+            .ID("FormPanel1")
+            .Title(ViewBag.GridName)
+            //.Width(1000)
+            .BodyPadding(5)
+            .DefaultAnchor("50%")
+            .Items(
+                    X.TextField()
+                        .Name("Case.Id")
+                        .Value(Model.Case.Id)
+                        .Hidden(true),
+                    X.TextField()
+                        .Name("Case.Name")
+                        .Value(Model.Case.Name)
+                        .AllowBlank(false)
+                        .FieldLabel("Название"),
+                    X.TextArea()
+                        .Name("Case.Description")
+                        .Text(Model.Case.Description)
+                        .FieldLabel("Описание"),
+                    X.ComboBox()
+                        .Name("team")
+                        .FieldLabel("Бригада")
+                        .EmptyText("Выберите бригаду")
+                        .Resizable(true)
+                        .SelectedItems(Model.ListItemValue)
+                        .Items(
+                            Model.ListItems
+                        )
+
+
+            )
+            .Buttons(
+                X.Button()
+                    .Text("Сохранить")
+                    .DirectClickAction(action),
+                X.Button()
+                    .Text("Отмена")
+                    .Listeners(le => le.Click.Handler = "window.location = " + JSON.Serialize(Url.Action("Index")))
+
+
+            )
+    )
+    }
